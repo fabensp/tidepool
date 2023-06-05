@@ -1,0 +1,51 @@
+This document is a list of SQL queries to be added to each arm of the database
+
+----------------
+   Methods for UserDB
+----------------
+
+void fetch_user(int id);
+   SELECT username, email, access FROM user WHERE id = :id;
+
+void fetch_guardian(int id);
+   SELECT guardianId FROM guardian WHERE childId = :id;
+
+void check_user(std::string username, std::string email, int id);
+   SELECT count(username), count(email) FROM user
+   WHERE id != :id AND (username = :username OR email = :email);
+
+void insert_user(int id, std::string username, std::string email, std::string password, int access);
+   INSERT INTO user VALUES (:id, :username, :email, :password, :access);
+
+void update_user(std::string username, std::string email, std::string password);
+   sqlcmd += "UPDATE user SET ";
+   if (username != "") sqlcmd += "username = :username, ";
+   if (email != "") sqlcmd += "email = :email, ";
+   if (password != "") sqlcmd += "password = :password ";
+   sqlcmd += "WHERE id = :id;";
+
+void verify_user(std::string email, std::string password);
+   SELECT id, username, access FROM user WHERE email = :email AND password = :password;
+
+void insert_guardian(int childId, int guardianId);
+   INSERT INTO guardian VALUES (:childId, :guardianId);
+
+void update_guardian(int id, int guardianId);
+   UPDATE guardian SET guardianId = :guardianId WHERE childId = :childId;
+
+void max_userid();
+   SELECT MAX(id) FROM user;
+
+void fetch_cfg(int userId, std::string key);
+   sqlcmd += "SELECT ";
+   sqlcmd += key;
+   sqlcmd += " FROM config WHERE id = :id;";
+
+void update_cfg(int userId, std::string key, std::string val);
+   sqlcmd += "INSERT INTO config(userId,";
+   sqlcmd += key;
+   sqlcmd += ") VALUES(:id, :val) ON CONFLICT(id) DO UPDATE SET ";
+   sqlcmd += key;
+   sqlcmd += " = excluded.";
+   sqlcmd += key;
+   sqlcmd += ";";
